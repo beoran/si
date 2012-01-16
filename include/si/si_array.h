@@ -40,6 +40,9 @@ SI_API SiArray * siarray_room_(SiArray* self, size_t newroom);
 /** Grows the SiArray if needed so it will be able to contain amount elements.*/
 SI_API SiArray * siarray_grow(SiArray * self, size_t amount);
 
+/** Increments the size of the array by one. Does not grow the array. */
+SiArray * siarray_sizeup(SiArray * self);
+
 /** Initializes a new array with a capacity of amount elements of size 
 elsz each. The initial size of the array will be 0.*/
 SI_API SiArray * siarray_init(SiArray * self, size_t amount, size_t elsz);

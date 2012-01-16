@@ -57,6 +57,11 @@ void * sitable_drop(SiTable * self, void * key);
 void * sitable_set(SiTable * self, void * key, void * value);
 
 
+/** Doubles the size of the cellar block and the pails block,
+so collisions can be handled. NOTE: should also grow table but rehash is slow...
+**/
+SiTable * sitable_grow(SiTable * self);
+
 
 
 #endif
