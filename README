@@ -1,0 +1,219 @@
+# Si is C(ee) Improved. 
+
+## Introduction
+
+Si is a proposed programming language that will be a superset of ANSI C that 
+is implemented through a front-end compiler that compiles to plain C. 
+All legal ANSI C is also legal Si. Si is intdened to offer a minimal set of
+improvements and enhancements to make C easier to use without becoming heavy 
+and hard to use like other language that extend C. Si should also have a nice 
+syntax.
+
+Si wis proposed to have the following features:
+
+
+## Methods
+
+Methods are special functions that are called though the method calling syntax
+on a variable of a struct, union, enum or typedef type, even a typedef of a built in
+C type. The method syntax is as follows: 
+
+variable::method(param, param)  
+
+:: works both on variables that are pointers and those that are not pointers. 
+
+Methods are defined as follows: 
+
+methods struct Foo {  
+  int frobnicate(char * str) {
+    return printf("Frobnicating foo:%s\n", str);
+  }
+}
+
+Methods are declared as follows:
+
+methods struct Foo {
+  int frobnicate(char * str); 
+}
+
+
+Methods get passed the first variable as a first hidden argument in the variable 
+self, so the example above translates to C as exactly follows:
+
+int Foo_frobnicate(Foo * self, char * str) { 
+    return printf("Frobnicating foo:%s\n", str);
+}
+
+
+Method overloading: 
+
+Methods may be overloaded, but the name must be altered by adding a ~ and an extension. 
+The compiler seeks for the best match.
+
+So for example:
+
+methods struct Foo {
+  int frobnicate~integer(int integer); 
+}
+
+
+Could be called like:
+{ 
+  Foo foo;
+  foo::frobnicate(5); 
+}
+
+## Easy struct extension and delegation. 
+
+Structs and unions may delegate tfunctionalty to contained structs or unions. If they do so,
+all the declared or defined members become available directly to the struct they are incorporated 
+in. Delegated structs or unions export their methods to the surrounding struct or union. In case 
+of collisions, the methods and members are overridden in order of appearance, and the surrounding 
+struct finally overrides those fields and members of the incorporated structs. 
+
+Note that those methods will still receive only the 
+incorporated object itself as self, not the surrounding object. 
+
+For example: 
+
+Struct Foo {};
+
+struct Bar { 
+  int bb;
+};
+
+
+methods struct Bar {
+  void bar(void) {
+     puts("In bar!");
+  }
+};
+
+struct Foo {
+  delegate struct Bar bar;
+};
+
+
+Then you can do: 
+
+{ 
+  Foo foo;
+  foo.bb = 10; 
+  foo::bar();
+}
+
+Is translated to C as: 
+
+{ 
+  Foo foo;
+  foo.bar.bb = 10
+  Bar_bar(&foo.bar);
+}
+
+# Interfaces
+
+Interfaces define a set of methods that a union, struct, typedef or enum must support. 
+Interfaces are like automatic vtables. You can cast any struct, typedef, enum, or union to 
+them as long as the compiler can that see that the object you wnat to cast to 
+the interface has the needed methods. 
+
+For example if the following is defined: 
+
+interface Printer {
+  int print(void);
+};
+
+methods struct Foo { 
+  int print(void); 
+}
+
+int try_print(interface Printer * toprint) {
+  return toprint::print(); 
+} 
+
+Then you can do the following: 
+
+{ 
+  struct Foo foo;
+  try_print(&foo);
+}
+
+And this will be translated to C as:
+
+struct interface_Printer { 
+  void * self;
+  (int) (*print)(void * self);
+}
+
+Foo_print(Bar * self);
+
+int try_print(struct interface_Print * toprint)  { 
+  return toprint->print((void *)toprint);
+}
+  
+{
+  struct Foo foo;
+  struct interface_Printer printer = { &foo, Foo_print }; 
+  try_print(foo);
+}
+
+
+Typedefs of interfaces are allowed, for example like this:
+
+typdef interface Printer Printer;
+
+Pointers to interfaces are allowed.
+Interfaces can be passed as pointers or as values, 
+
+
+## Comments:
+C++ style comments are supported explicitly.
+
+## Variable declarations 
+
+Variables may be declared anywhere, except in the () of an if, while, for, switch expression.
+
+## Limited type inferrence
+
+If you use the following syntax, the compiler will infer the type of the variable
+from the return type of or value of the expression on the right hand side:
+
+auto foo = "Hello";
+auto bar = ;
+
+
+## Memory management:
+
+Pointers defined with @ in stead of * are managed pointers. Depending on the SI 
+implementation they may be allocaded using a garbage collector like boehm, or 
+use reference counting.
+
+Structs and unions can be allocated more easily using the syntax:
+
+auto foo = create(*Foo); // foo is a * Foo that points to a newly allocated Foo struct
+
+Or 
+
+auto foo = create(@Foo); // foo is a @ Foo that points to a newly allocated Foo struct
+
+If you pass parameters to create after the object to create, these will be passed to the 
+init method of the created object if that init method exists.
+
+Variables creaded as *Type must be destroyed manually: 
+
+destroy(foo);
+
+If the destroyed object has a method named fini, that will be called before the memory 
+is deallocated.
+
+Variables created as @Type wll have their fini method called automatically if it exists.
+
+## Conclusion 
+
+That's all folks. At least for now. :)
+
+
+
+
+
+
