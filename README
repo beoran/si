@@ -154,7 +154,7 @@ int try_print(struct interface_Print * toprint)  {
 {
   struct Foo foo;
   struct interface_Printer printer = { &foo, Foo_print }; 
-  try_print(foo);
+  try_print(&printer);
 }
 
 
